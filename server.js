@@ -11,7 +11,20 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve all static files (including WarCommander.js)
+// ✅ IP Allowlist Middleware
+const allowedIps = ['YOUR_IP_HERE', '127.0.0.1']; // Add your IP here
+
+app.use((req, res, next) => {
+  const requestIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+  const cleanIp = requestIp.replace('::ffff:', ''); // Remove IPv6 prefix if exists
+  if (allowedIps.includes(cleanIp)) {
+    next();
+  } else {
+    res.status(403).send('Access Denied 🚫');
+  }
+});
+
+// Serve WarCommander.js
 app.use(express.static(__dirname));
 
 // Default route
