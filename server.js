@@ -11,28 +11,32 @@ app.use(express.json());
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ✅ IP Allowlist Middleware
-const allowedIps = ['62.201.240.35', '127.0.0.1']; // Add your IP here
+// ✅ IP Allowlist
+const allowedIps = ['62.201.240.35', '127.0.0.1']; // Your real IP and local IP
 
 app.use((req, res, next) => {
   const requestIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const cleanIp = requestIp.replace('::ffff:', ''); // Remove IPv6 prefix if exists
+  const cleanIp = requestIp.replace('::ffff:', '').split(',')[0]; // Remove IPv6 prefix + take first IP if multiple
+
+  console.log("Request from IP:", cleanIp); // Debug print
+
   if (allowedIps.includes(cleanIp)) {
     next();
   } else {
-    res.status(403).send('Access Denied 🚫');
+    res.status(403).send('🚫 Access Denied 🚫<br>Contact admin on Discord: <a href="https://discord.gg/tHSMDZQD" target="_blank">Join Here</a>');
   }
 });
 
-// Serve WarCommander.js
+// Serve static files (your WarCommander.js etc)
 app.use(express.static(__dirname));
 
-// Default route
+// Default homepage
 app.get('/', (req, res) => {
   res.send('WarCommander backend is running 🚀');
 });
 
+// Start the server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
