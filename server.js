@@ -12,7 +12,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ IP Allowlist Middleware
-const allowedIps = ['YOUR_IP_HERE', '127.0.0.1']; // Add your IP here
+const allowedIps = ['62.201.240.35', '127.0.0.1']; // Add your IP here
 
 app.use((req, res, next) => {
   const requestIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
