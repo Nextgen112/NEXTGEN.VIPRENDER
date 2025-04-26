@@ -1,3 +1,4 @@
+// server.js
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -12,39 +13,54 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ IP Allowlist
-const allowedIps = ['62.201.240.35', '127.0.0.1']; // Your real IP and local IP
+const allowedIps = ['62.201.240.35', '127.0.0.1']; // Your allowed IPs here
 
 app.use((req, res, next) => {
   const requestIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-  const cleanIp = requestIp.replace('::ffff:', '').split(',')[0]; // Remove IPv6 prefix + take first IP if multiple
+  const cleanIp = requestIp.replace('::ffff:', '').split(',')[0];
 
-  console.log("Request from IP:", cleanIp); // Debug print
+  console.log("Incoming connection from IP:", cleanIp); // Log every IP trying to connect
 
   if (allowedIps.includes(cleanIp)) {
     next();
   } else {
-    res.status(403).send('🚫 Access Denied 🚫<br>Contact admin on Discord: <a href="https://discord.gg/tHSMDZQD" target="_blank">Join Here</a>');
+    res.status(403).send(`
+      <div style="text-align: center; margin-top: 100px; font-family: Arial;">
+        <h1>🚫 Access Denied 🚫</h1>
+        <p>Your IP is not authorized to access this server.</p>
+        <br>
+        <a href="https://discord.gg/tHSMDZQD" target="_blank" style="font-size: 18px; color: red;">Join our Discord for Access 💬</a>
+      </div>
+    `);
   }
 });
 
-// Serve static files (your WarCommander.js etc)
+// ✅ Serve WarCommander.js and other static files
 app.use(express.static(__dirname));
 
-// Default homepage
+// ✅ Home Page Route
 app.get('/', (req, res) => {
   res.send(`
-  <div style="text-align: center; margin-top: 100px; font-family: Arial;">
-    <h1>🚀 War Commander Backend Online 🚀</h1>
-    <h2>👾 NEXT Generation Hackers 👾</h2>
-    <p>Welcome to the future of WarCommander domination.<br>Backend server powered by passion and skill!</p>
-    <br>
-    <a href="https://discord.gg/tHSMDZQD" target="_blank" style="font-size: 18px; color: blue;">Join our Discord 💬</a>
-  </div>
-`);
+    <div style="text-align: center; margin-top: 100px; font-family: Arial;">
+      <h1 style="color: #4CAF50;">🚀 War Commander Backend Online 🚀</h1>
+      <h2 style="color: #333;">👾 NEXT Generation Hackers 👾</h2>
+      <p style="font-size: 18px;">Welcome to the future of WarCommander domination.<br>Backend server powered by passion and skill!</p>
+      <br>
+      <a href="https://discord.gg/tHSMDZQD" target="_blank" style="font-size: 20px; color: blue;">💬 Join our Discord 💬</a>
+    </div>
+  `);
+});
 
+// ✅ Health Check Route (optional)
+app.get('/status', (req, res) => {
+  res.json({
+    status: 'ONLINE ✅',
+    updated: new Date().toISOString()
+  });
+});
 
-// Start the server
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ NEXT Generation Hackers server running on port ${PORT}`);
 });
