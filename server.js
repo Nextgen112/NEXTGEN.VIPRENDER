@@ -32,8 +32,16 @@ app.use(express.static(__dirname));
 
 // Default homepage
 app.get('/', (req, res) => {
-  res.send('WarCommander backend is running 🚀');
-});
+  res.send(`
+  <div style="text-align: center; margin-top: 100px; font-family: Arial;">
+    <h1>🚀 War Commander Backend Online 🚀</h1>
+    <h2>👾 NEXT Generation Hackers 👾</h2>
+    <p>Welcome to the future of WarCommander domination.<br>Backend server powered by passion and skill!</p>
+    <br>
+    <a href="https://discord.gg/tHSMDZQD" target="_blank" style="font-size: 18px; color: blue;">Join our Discord 💬</a>
+  </div>
+`);
+
 
 // Start the server
 const PORT = process.env.PORT || 3000;
