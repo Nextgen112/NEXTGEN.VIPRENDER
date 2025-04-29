@@ -13,7 +13,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ✅ IP Allowlist
-const allowedIps = ['62.201.240.35', '62.201.243.131', '185.244.153.5', '185.244.153.5', '185.244.153.5', '185.244.153.5', '00.106.205.46']; // Your allowed IPs here
+const allowedIps = ['62.201.240.35', '62.201.243.131', '185.244.153.5', '185.244.153.5', '185.244.153.5', '2001:4860:7:610::fc', '00.106.205.46']; // Your allowed IPs here
 
 app.use((req, res, next) => {
   const requestIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
