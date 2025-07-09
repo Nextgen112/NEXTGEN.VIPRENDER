@@ -1,6 +1,6 @@
 import express from 'express';
 import session from 'express-session';
-import bcrypt from 'bcrypt'; // For password hashing
+import bcrypt from 'bcrypt';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -13,31 +13,30 @@ app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session middleware
 app.use(session({
-  secret: 'your-secret-key',
+  secret: 'super-secret-session-key',
   resave: false,
   saveUninitialized: true
 }));
 
-// Hardcoded users (in real apps use DB)
+// Hardcoded users
 const users = [
-  { username: 'admin1', passwordHash: bcrypt.hashSync('pass123', 10) },
-  { username: 'admin2', passwordHash: bcrypt.hashSync('ngh2025', 10) }
+  { username: 'admin', passwordHash: bcrypt.hashSync('admin123', 10) },
+  { username: 'vipuser', passwordHash: bcrypt.hashSync('ngh2025', 10) }
 ];
 
-// Allowlist in memory
+// IP allowlist (can be stored in file/db later)
 let allowedIps = [
   '62.201.239.232', '62.201.243.131', '185.244.153.5',
   '216.144.248.25', '216.144.248.23', '216.144.248.21',
   '31.18.96.242'
 ];
 
-// Middleware: only allow whitelisted IPs
+// Middleware to check IP allowlist
 app.use((req, res, next) => {
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').replace('::ffff:', '').split(',')[0];
-  if (req.path.startsWith('/login') || req.path.startsWith('/panel') || req.path.startsWith('/update-ip') || req.path.startsWith('/logout')) {
-    return next(); // Let login panel routes pass
+  if (req.path.startsWith('/panel') || req.path.startsWith('/login') || req.path.startsWith('/update-ip') || req.path.startsWith('/logout')) {
+    return next();
   }
   console.log(`🔍 Access attempt from IP: ${ip}`);
   if (allowedIps.includes(ip)) return next();
@@ -50,7 +49,7 @@ app.use((req, res, next) => {
   `);
 });
 
-// Serve static files
+// Static files (optional)
 app.use(express.static(__dirname));
 
 // Login panel
@@ -89,13 +88,13 @@ app.post('/login', async (req, res) => {
   res.redirect('/panel');
 });
 
-// Update IP route
+// Add IP to allowlist
 app.post('/update-ip', (req, res) => {
   if (!req.session.user) return res.status(401).send('Unauthorized');
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').replace('::ffff:', '').split(',')[0];
   if (!allowedIps.includes(ip)) {
     allowedIps.push(ip);
-    console.log(`✅ IP ${ip} added by user ${req.session.user}`);
+    console.log(`✅ IP ${ip} added by ${req.session.user}`);
   }
   res.send(`<p style="text-align:center;">✅ Your IP (${ip}) is now allowed. <a href="/">Go Home</a></p>`);
 });
@@ -107,9 +106,14 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// Server home
+// Home
 app.get('/', (req, res) => {
-  res.send(`<h2 style="text-align:center;">🌐 War Commander Server Online</h2>`);
+  res.send(`
+    <div style="text-align:center; margin-top:100px; font-family:Arial;">
+      <h1>🚀 War Commander Server Online</h1>
+      <p>Welcome, soldier.</p>
+    </div>
+  `);
 });
 
 const PORT = process.env.PORT || 3000;
