@@ -1,9 +1,10 @@
 import express from 'express';
 import session from 'express-session';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs'; // no warnings, lighter than bcrypt
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,40 +20,46 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// Hardcoded users
+// ✅ User list (username + password hash)
 const users = [
   { username: 'admin', passwordHash: bcrypt.hashSync('admin123', 10) },
   { username: 'vipuser', passwordHash: bcrypt.hashSync('ngh2025', 10) }
 ];
 
-// IP allowlist (can be stored in file/db later)
+// ✅ IP allowlist (in memory)
 let allowedIps = [
-  '62.201.239.232', '62.201.243.131', '185.244.153.5',
-  '216.144.248.25', '216.144.248.23', '216.144.248.21',
-  '31.18.96.242'
+  '62.201.239.232', '62.201.243.131', '185.244.153.5'
 ];
 
-// Middleware to check IP allowlist
+// ✅ Middleware to block routes unless IP is allowed
 app.use((req, res, next) => {
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').replace('::ffff:', '').split(',')[0];
+
+  // Always allow login routes
   if (req.path.startsWith('/panel') || req.path.startsWith('/login') || req.path.startsWith('/update-ip') || req.path.startsWith('/logout')) {
     return next();
   }
-  console.log(`🔍 Access attempt from IP: ${ip}`);
+
+  // Allow allowed IPs for everything else (e.g., VIP.js, homepage)
   if (allowedIps.includes(ip)) return next();
+
+  // Block access
+  console.warn(`❌ Unauthorized IP tried to access: ${ip}`);
   return res.status(403).send(`
     <div style="text-align:center; margin-top:100px;">
       <h1>🚫 Access Denied</h1>
-      <p>Your IP (${ip}) is not authorized.</p>
+      <p>Your IP (${ip}) is not authorized to access this server.</p>
       <a href="/panel">🔐 Login to authorize</a>
     </div>
   `);
 });
 
-// Static files (optional)
-app.use(express.static(__dirname));
+// ✅ Redirect / to /panel
+app.get('/', (req, res) => {
+  res.redirect('/panel');
+});
 
-// Login panel
+// ✅ Login + Update Panel
 app.get('/panel', (req, res) => {
   if (req.session.user) {
     return res.send(`
@@ -67,6 +74,7 @@ app.get('/panel', (req, res) => {
       </div>
     `);
   }
+
   res.send(`
     <form method="POST" action="/login" style="text-align:center; font-family:Arial; margin-top:100px;">
       <h2>🔐 Admin Login</h2>
@@ -77,7 +85,7 @@ app.get('/panel', (req, res) => {
   `);
 });
 
-// Login route
+// ✅ Handle login POST
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = users.find(u => u.username === username);
@@ -88,35 +96,45 @@ app.post('/login', async (req, res) => {
   res.redirect('/panel');
 });
 
-// Add IP to allowlist
+// ✅ Add IP to allowlist
 app.post('/update-ip', (req, res) => {
   if (!req.session.user) return res.status(401).send('Unauthorized');
+
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').replace('::ffff:', '').split(',')[0];
   if (!allowedIps.includes(ip)) {
     allowedIps.push(ip);
-    console.log(`✅ IP ${ip} added by ${req.session.user}`);
+    console.log(`✅ ${req.session.user} added IP: ${ip}`);
   }
-  res.send(`<p style="text-align:center;">✅ Your IP (${ip}) is now allowed. <a href="/">Go Home</a></p>`);
+
+  res.send(`
+    <div style="text-align:center; font-family:Arial;">
+      <h2>✅ Your IP (${ip}) is now whitelisted!</h2>
+      <p>You can now access WarCommander.js</p>
+      <a href="/VIP.js" target="_blank">▶ Open VIP.js</a><br><br>
+      <a href="/panel">🔙 Back to Panel</a>
+    </div>
+  `);
 });
 
-// Logout
+// ✅ Logout
 app.post('/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/panel');
   });
 });
 
-// Home
-app.get('/', (req, res) => {
-  res.send(`
-    <div style="text-align:center; margin-top:100px; font-family:Arial;">
-      <h1>🚀 War Commander Server Online</h1>
-      <p>Welcome, soldier.</p>
-    </div>
-  `);
+// ✅ Serve protected file
+app.get('/VIP.js', (req, res) => {
+  res.sendFile(path.join(__dirname, 'VIP.js'));
 });
 
+// ✅ Example dummy WarCommander.js (just rename it as needed)
+app.get('/WarCommander.js', (req, res) => {
+  res.send(`console.log("✅ WarCommander.js Loaded");`);
+});
+
+// ✅ Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
