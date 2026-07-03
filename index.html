@@ -1,2 +1,50 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Admin Login</title><link rel="stylesheet" href="style.css"><base target="_blank">
-</head><body><div class="login-box"><h2>Admin Panel</h2><form id="loginForm"><div class="input-group"><input type="text" id="username" placeholder="Username" required></div><div class="input-group"><input type="password" id="password" placeholder="Password" required></div><button type="submit">Login</button><p id="error" class="error"></p></form></div><script src="auth.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>✨ VIP Manager</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav>
+  <span class="brand">✨ VIP Manager</span>
+  <div class="nav-links">
+    <button id="clearAllBtn">Clear All</button>
+  </div>
+</nav>
+
+<div class="container">
+  <h2>Your VIPs</h2>
+  <div id="vipList" class="vip-grid">
+    <p class="empty">Loading...</p>
+  </div>
+
+  <div class="add-section">
+    <h3>Add New VIP</h3>
+    <form id="addVipForm" class="form-row">
+      <div class="form-group">
+        <label for="nameInput">Full Name</label>
+        <input type="text" id="nameInput" placeholder="e.g. Jane Doe" required />
+      </div>
+      <div class="form-group">
+        <label for="roleInput">Role</label>
+        <input type="text" id="roleInput" placeholder="e.g. CEO" value="VIP Member" />
+      </div>
+      <div class="form-group">
+        <label for="levelInput">Level (1–5)</label>
+        <input type="number" id="levelInput" min="1" max="5" value="1" required />
+      </div>
+      <button type="submit" class="btn">Add VIP</button>
+    </form>
+  </div>
+</div>
+
+<footer>
+  &copy; 2026 VIP Manager &bull; Your data is stored locally in your browser.
+</footer>
+
+<script src="VIP.js"></script>
+</body>
+</html>
